@@ -1,0 +1,29 @@
+1. Desarrollo de Páginas Web
+Descripción: Diseño y desarrollo de sitios web corporativos, landing pages y portafolios. Incluye diseño responsive, SEO básico, formulario de contacto y panel de administración.
+Tecnologías: React, Next.js, WordPress según requerimiento.
+Precio: Desde $600.000 CLP (landing page) hasta $2.500.000 CLP (sitio corporativo completo).
+Plazo: 3 a 6 semanas.
+
+2. Desarrollo de Aplicaciones Móviles
+Descripción: Apps nativas e híbridas para iOS y Android. Incluye diseño UI/UX, integración con APIs, notificaciones push y publicación en tiendas.
+Tecnologías: React Native, Flutter.
+Precio: Desde $3.000.000 CLP (app básica) hasta $12.000.000 CLP (app compleja con backend).
+Plazo: 2 a 5 meses.
+
+3. Embudo de Ventas Digital
+Descripción: Diseño e implementación de embudos de conversión automatizados. Incluye landing pages, email marketing, chatbots de captación y seguimiento de leads con CRM.
+Tecnologías: n8n, WhatsApp Business API, CRM personalizado.
+Precio: Desde $1.200.000 CLP hasta $4.000.000 CLP.
+Plazo: 3 a 8 semanas.
+
+4. Plataformas SaaS B2B
+Descripción: Desarrollo de plataformas de software como servicio para empresas. Incluye autenticación, dashboard, gestión de usuarios, facturación y API.
+Tecnologías: Node.js, TypeScript, PostgreSQL, Azure.
+Precio: Desde $8.000.000 CLP hasta $25.000.000 CLP.
+Plazo: 3 a 8 meses.
+
+5. Agentes de Inteligencia Artificial
+Descripción: Desarrollo de agentes conversacionales inteligentes para atención al cliente, calificación de leads y automatización de procesos. Incluye integración con WhatsApp, web chat y CRM.
+Tecnologías: LangChain, Groq, OpenAI, Supabase, Cloudflare Workers.
+Precio: Desde $2.000.000 CLP hasta $10.000.000 CLP.
+Plazo: 4 a 12 semanas.
