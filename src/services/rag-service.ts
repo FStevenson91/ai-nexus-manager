@@ -4,7 +4,16 @@ import { ChromaClient, Collection } from "chromadb";
 import {  DefaultEmbeddingFunction } from "@chroma-core/default-embed"
 
 // Crea la conexión con el servidor de ChromaDB que está corriendo en tu computador (el que levantaste con Docker).
-const client = new ChromaClient({path: "http://localhost:8000"})
+// const client = new ChromaClient({path: "http://localhost:8000"})
+const client = new ChromaClient({
+    path: "https://api.trychroma.com",
+    auth: {
+        provider: "token",
+        credentials: process.env.CHROMA_API_KEY!,
+    },
+    tenant: process.env.CHROMA_TENANT!,
+    database: process.env.CHROMA_DATABASE!,
+})
 
 // Crea una instancia de la función de embeddings. Esta es la que transforma "Desarrollo de Aplicaciones Móviles" en algo como [0.23, -0.45, 0.87, ...].
 const embedder = new DefaultEmbeddingFunction()
