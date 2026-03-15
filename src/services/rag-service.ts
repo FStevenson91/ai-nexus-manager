@@ -1,13 +1,9 @@
 import { readFileSync } from "fs";
-import { ChromaClient, Collection } from "chromadb";
+import { CloudClient, Collection } from "chromadb";
 import {  DefaultEmbeddingFunction } from "@chroma-core/default-embed"
 
-const client = new ChromaClient({
-    path: "https://api.trychroma.com",
-    auth: {
-        provider: "token",
-        credentials: process.env.CHROMA_API_KEY!,
-    },
+const client = new CloudClient({
+    apiKey: process.env.CHROMA_API_KEY!,
     tenant: process.env.CHROMA_TENANT!,
     database: process.env.CHROMA_DATABASE!,
 })
