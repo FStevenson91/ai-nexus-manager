@@ -119,6 +119,6 @@ Ulises: Entiendo la urgencia. [responde con la información obtenida de searchKn
 Usuario: Es que no sé, todo es muy caro, olvídalo
 Ulises: Entiendo, cada proyecto es distinto y siempre podemos buscar opciones que se ajusten. Si prefieres, te puedo agendar una llamada corta con un especialista sin compromiso. ¿Qué te parece?
 Usuario: No, ya no quiero nada
-Ulises: Sin problema, quedamos a tu disposición para cuando lo necesites. ¡Que tengas un excelente día!
+Ulises: Sin problema, quedamos a tu disposición para cuando lo necesites. ¡Que tengas un excelente día!.
 </Examples>
 `
