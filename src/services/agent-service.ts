@@ -1,5 +1,5 @@
 import { ChatGroq } from "@langchain/groq"
-import { SystemMessage, HumanMessage, AIMessage } from "@langchain/core/messages"
+import { SystemMessage, HumanMessage, AIMessage, ToolMessage } from "@langchain/core/messages"
 import { SYSTEM_PROMPT } from "../config/prompt.js"
 import { findOrCreateClient, saveMessage, getConversationMessage, findOrCreateConversation } from "./db-service.js"
 import { supabase } from "../config/supabase.js"
@@ -42,30 +42,45 @@ export async function userRequest(external_id: string, message: string) {
     userId: external_id,
     })
 
-    const tools = createUpdateClientTool(external_id)
+const updateClientTool = createUpdateClientTool(external_id)
 
-    const modelWithTools = model.bindTools([tools, searchKnowledgeTool], { tool_choice: "required" })
-    const extraction = await modelWithTools.invoke([systemMessage, ...historyMessages, humanMessage], { callbacks: [langfuseHandler] })
-    let knowledgeResult = ""
+    // Primera invocación: el modelo decide qué tools usar
+    const modelWithTools = model.bindTools([updateClientTool, searchKnowledgeTool])
+    const toolResponse = await modelWithTools.invoke(
+        [systemMessage, ...historyMessages, humanMessage], 
+        { callbacks: [langfuseHandler] }
+    )
 
-    if (extraction.tool_calls && extraction.tool_calls.length > 0) {
-        for (const toolCall of extraction.tool_calls) {
+    // Procesar tool calls y construir ToolMessages
+    const toolMessages: ToolMessage[] = []
+
+    if (toolResponse.tool_calls && toolResponse.tool_calls.length > 0) {
+        for (const toolCall of toolResponse.tool_calls) {
             if (toolCall.name === "update_client_info") {
                 await supabase.from("clients").update(toolCall.args).eq("external_id", external_id)
                 console.log("CLIENT UPDATED:", toolCall.args)
-            } if (toolCall.name === "search_knowledge_info") {
-                knowledgeResult = await searchKnowledge(toolCall.args.query)
+                toolMessages.push(new ToolMessage({
+                    tool_call_id: toolCall.id!,
+                    content: "Cliente actualizado correctamente: " + JSON.stringify(toolCall.args)
+                }))
+            }
+            if (toolCall.name === "search_knowledge_info") {
+                const result = await searchKnowledge(toolCall.args.query)
+                console.log("SEARCH RESULT:", result)
+                toolMessages.push(new ToolMessage({
+                    tool_call_id: toolCall.id!,
+                    content: result || "No se encontró información. NO inventes datos. Ofrece agendar una reunión con el equipo técnico."
+                }))
             }
         }
     }
 
+    // Segunda invocación: el modelo responde con el contexto de las tools
+    const finalMessages = toolMessages.length > 0
+        ? [systemMessage, ...historyMessages, humanMessage, toolResponse, ...toolMessages]
+        : [systemMessage, ...historyMessages, humanMessage]
 
-    const contextMessages = knowledgeResult 
-    ? [systemMessage, ...historyMessages, new SystemMessage({ content: "Información encontrada: " + knowledgeResult }), humanMessage]
-    : [systemMessage, ...historyMessages, humanMessage]
-
-
-    const response = await model.invoke(contextMessages, { callbacks: [langfuseHandler] })
+    const response = await model.invoke(finalMessages, { callbacks: [langfuseHandler] })
     const responseText = response.content as string
 
     await saveMessage(createChat.id, "assistant", responseText)
