@@ -80,10 +80,21 @@ const updateClientTool = createUpdateClientTool(external_id)
         ? [systemMessage, ...historyMessages, humanMessage, toolResponse, ...toolMessages]
         : [systemMessage, ...historyMessages, humanMessage]
 
-    const response = await model.invoke(finalMessages, { callbacks: [langfuseHandler] })
-    const responseText = response.content as string
+    try {
+        const response = await model.invoke(finalMessages, { callbacks: [langfuseHandler] })
+        const responseText = response.content as string
 
-    await saveMessage(createChat.id, "assistant", responseText)
-
-    return responseText
+        await saveMessage(createChat.id, "assistant", responseText)
+        return responseText
+    } catch (error) {
+        console.error("SECOND INVOKE ERROR:", error)
+        // Fallback: intentar sin tool messages
+        const fallbackResponse = await model.invoke(
+            [systemMessage, ...historyMessages, humanMessage], 
+            { callbacks: [langfuseHandler] }
+        )
+        const fallbackText = fallbackResponse.content as string
+        await saveMessage(createChat.id, "assistant", fallbackText)
+        return fallbackText
+    }
 }
