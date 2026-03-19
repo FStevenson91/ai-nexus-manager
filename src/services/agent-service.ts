@@ -44,57 +44,49 @@ export async function userRequest(external_id: string, message: string) {
 
 const updateClientTool = createUpdateClientTool(external_id)
 
-    // Primera invocación: el modelo decide qué tools usar
     const modelWithTools = model.bindTools([updateClientTool, searchKnowledgeTool])
-    const toolResponse = await modelWithTools.invoke(
-        [systemMessage, ...historyMessages, humanMessage], 
-        { callbacks: [langfuseHandler] }
-    )
+    const baseMessages = [systemMessage, ...historyMessages, humanMessage]
 
-    // Procesar tool calls y construir ToolMessages
-    const toolMessages: ToolMessage[] = []
-
-    if (toolResponse.tool_calls && toolResponse.tool_calls.length > 0) {
-        for (const toolCall of toolResponse.tool_calls) {
-            if (toolCall.name === "update_client_info") {
-                await supabase.from("clients").update(toolCall.args).eq("external_id", external_id)
-                console.log("CLIENT UPDATED:", toolCall.args)
-                toolMessages.push(new ToolMessage({
-                    tool_call_id: toolCall.id!,
-                    content: "Cliente actualizado correctamente: " + JSON.stringify(toolCall.args)
-                }))
-            }
-            if (toolCall.name === "search_knowledge_info") {
-                const result = await searchKnowledge(toolCall.args.query)
-                console.log("SEARCH RESULT:", result)
-                toolMessages.push(new ToolMessage({
-                    tool_call_id: toolCall.id!,
-                    content: result || "No se encontró información. NO inventes datos. Ofrece agendar una reunión con el equipo técnico."
-                }))
-            }
-        }
-    }
-
-    // Segunda invocación: el modelo responde con el contexto de las tools
-    const finalMessages = toolMessages.length > 0
-        ? [systemMessage, ...historyMessages, humanMessage, toolResponse, ...toolMessages]
-        : [systemMessage, ...historyMessages, humanMessage]
+    let toolMessages: ToolMessage[] = []
+    let toolResponse: any = null
 
     try {
-        const response = await model.invoke(finalMessages, { callbacks: [langfuseHandler] })
-        const responseText = response.content as string
+        // Primera invocación: el modelo decide qué tools usar
+        toolResponse = await modelWithTools.invoke(baseMessages, { callbacks: [langfuseHandler] })
 
-        await saveMessage(createChat.id, "assistant", responseText)
-        return responseText
+        if (toolResponse.tool_calls && toolResponse.tool_calls.length > 0) {
+            for (const toolCall of toolResponse.tool_calls) {
+                if (toolCall.name === "update_client_info") {
+                    await supabase.from("clients").update(toolCall.args).eq("external_id", external_id)
+                    console.log("CLIENT UPDATED:", toolCall.args)
+                    toolMessages.push(new ToolMessage({
+                        tool_call_id: toolCall.id!,
+                        content: "Cliente actualizado correctamente: " + JSON.stringify(toolCall.args)
+                    }))
+                }
+                if (toolCall.name === "search_knowledge_info") {
+                    const result = await searchKnowledge(toolCall.args.query)
+                    console.log("SEARCH RESULT:", result)
+                    toolMessages.push(new ToolMessage({
+                        tool_call_id: toolCall.id!,
+                        content: result || "No se encontró información. NO inventes datos. Ofrece agendar una reunión con el equipo técnico."
+                    }))
+                }
+            }
+        }
     } catch (error) {
-        console.error("SECOND INVOKE ERROR:", error)
-        // Fallback: intentar sin tool messages
-        const fallbackResponse = await model.invoke(
-            [systemMessage, ...historyMessages, humanMessage], 
-            { callbacks: [langfuseHandler] }
-        )
-        const fallbackText = fallbackResponse.content as string
-        await saveMessage(createChat.id, "assistant", fallbackText)
-        return fallbackText
+        console.error("TOOL INVOKE ERROR:", error)
+        // El modelo generó tool call en formato incorrecto — continuar sin tools
     }
+
+    // Segunda invocación: responde con contexto de tools (o sin ellas si falló)
+    const finalMessages = toolMessages.length > 0
+        ? [...baseMessages, toolResponse, ...toolMessages]
+        : baseMessages
+
+    const response = await model.invoke(finalMessages, { callbacks: [langfuseHandler] })
+    const responseText = response.content as string
+
+    await saveMessage(createChat.id, "assistant", responseText)
+    return responseText
 }
