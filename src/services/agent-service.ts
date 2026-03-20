@@ -57,13 +57,13 @@ const updateClientTool = createUpdateClientTool(external_id)
         if (toolResponse.tool_calls && toolResponse.tool_calls.length > 0) {
             for (const toolCall of toolResponse.tool_calls) {
                 if (toolCall.name === "update_client_info") {
-                    await supabase.from("clients").update(toolCall.args).eq("external_id", external_id)
                     console.log("CLIENT UPDATED:", toolCall.args)
                     toolMessages.push(new ToolMessage({
                         tool_call_id: toolCall.id!,
                         content: "Cliente actualizado correctamente: " + JSON.stringify(toolCall.args)
                     }))
                 }
+
                 if (toolCall.name === "search_knowledge_info") {
                     const result = await searchKnowledge(toolCall.args.query)
                     console.log("SEARCH RESULT:", result)
