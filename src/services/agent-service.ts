@@ -57,6 +57,7 @@ const updateClientTool = createUpdateClientTool(external_id)
         if (toolResponse.tool_calls && toolResponse.tool_calls.length > 0) {
             for (const toolCall of toolResponse.tool_calls) {
                 if (toolCall.name === "update_client_info") {
+                    await updateClientTool.invoke(toolCall.args)
                     console.log("CLIENT UPDATED:", toolCall.args)
                     toolMessages.push(new ToolMessage({
                         tool_call_id: toolCall.id!,
