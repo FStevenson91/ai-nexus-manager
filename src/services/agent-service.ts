@@ -75,9 +75,29 @@ const updateClientTool = createUpdateClientTool(external_id)
                 }
             }
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("TOOL INVOKE ERROR:", error)
-        // El modelo generó tool call en formato incorrecto — continuar sin tools
+        // Intentar recuperar tool call del formato incorrecto <function=name{...}>
+        const failedGen = error?.error?.error?.failed_generation
+        if (failedGen) {
+            const match = failedGen.match(/<function=(\w+)(\{.*?\})<\/function>/)
+            if (match) {
+                const toolName = match[1]
+                try {
+                    const args = JSON.parse(match[2])
+                    if (toolName === "search_knowledge_info" && args.query) {
+                        const result = await searchKnowledge(args.query)
+                        console.log("SEARCH RESULT (recovered):", result)
+                        toolMessages.push(new ToolMessage({
+                            tool_call_id: "recovered",
+                            content: result || "No se encontró información. NO inventes datos. Ofrece agendar una reunión."
+                        }))
+                    }
+                } catch (parseError) {
+                    console.error("RECOVERY PARSE ERROR:", parseError)
+                }
+            }
+        }
     }
 
     // Segunda invocación: responde con contexto de tools (o sin ellas si falló)
