@@ -7,6 +7,7 @@ export async function findOrCreateClient(id: string){
         return result.data[0]
     } else {
     const newClient = await supabase.from("clients").insert({ external_id: id }).select()
+    if (!newClient.data?.[0]) throw new Error("No se pudo crear el cliente")
     return newClient.data?.[0]
     }
 }

@@ -22,6 +22,14 @@ export async function initRAG() {
     })
     console.log("CHROMA CONNECTED OK")
 
+    // IMPORTANTE: Si actualizas services.txt, debes borrar la colección "services"
+    // desde app.trychroma.com y reiniciar el servidor para recargar los chunks.
+    const existing = await collection.count()
+        if (existing > 0) {
+            console.log(`RAG already initialized with ${existing} chunks. For reload, delete collection at Chroma Cloud and restart.`)
+            return
+        }
+
     const servicesContent = readFileSync("src/knowledge/services.txt", "utf-8")
 
     const chunks = servicesContent.split(/\r?\n\r?\n/)
