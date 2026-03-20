@@ -21,7 +21,10 @@ export function createUpdateClientTool(external_id: string){
         schema: updateClientSchema,
         func: async (input) => {
             console.log("TOOL EJECUTADA:", input)
+
             const updateClient = await supabase.from("clients").update(input).eq("external_id", external_id)
+            console.log("SUPABASE UPDATE RESULT:", JSON.stringify(updateClient))
+            
             return "Información del cliente actualizada correctamente"
         }
     })
