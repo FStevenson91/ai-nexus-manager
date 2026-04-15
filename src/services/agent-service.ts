@@ -44,7 +44,7 @@ export async function userRequest(external_id: string, message: string) {
 
 const updateClientTool = createUpdateClientTool(external_id)
 
-    const modelWithTools = model.bindTools([updateClientTool, searchKnowledgeTool])
+    const modelWithTools = model.bindTools([updateClientTool, searchKnowledgeTool], { tool_choice: "required" })
     const baseMessages = [systemMessage, ...historyMessages, humanMessage]
 
     let toolMessages: ToolMessage[] = []
