@@ -85,6 +85,14 @@ POST https://ai-nexus-worker.felipe-stevenson77.workers.dev
 ```
 Mismo body que el endpoint REST. El Worker valida y reenvía a Azure.
 
+## Cómo probar el proyecto
+
+### Para probar en producción (sin instalación)
+Usa el endpoint `POST https://ai-nexus-worker.felipe-stevenson77.workers.dev` con el body de ejemplo. Esto es ideal para recruiters que quieren una demo rápida sin configurar entornos.
+
+### Para desarrollo local
+Sigue las instrucciones de "Configuración local" (requiere Node.js, cuentas en servicios externos y setup manual).
+
 ## Configuración local
 
 ### Prerrequisitos
